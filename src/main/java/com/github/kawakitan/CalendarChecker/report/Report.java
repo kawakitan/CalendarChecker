@@ -15,19 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.kawakitan.CalendarChecker;
+package com.github.kawakitan.CalendarChecker.report;
 
-import com.github.kawakitan.CalendarChecker.frame.CalendarCheckerFrame;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * 
  * @author kawakitan
  */
-public class Application {
+public interface Report {
 
-	public static void main(String[] args) {
-		CalendarCheckerFrame frm = new CalendarCheckerFrame();
-		frm.setVisible(true);
-	}
+	void setDataHeader(final List<String> names) throws IOException;
 
+	void addDataRecord(final List<String> datas, final String result, final String expected) throws IOException;
+
+	void save() throws IOException;
 }

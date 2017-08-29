@@ -24,6 +24,10 @@ import java.util.regex.Pattern;
 
 import com.github.kawakitan.CalendarChecker.entity.Gengo;
 
+/**
+ * 
+ * @author kawakitan
+ */
 public class CalendarConvertor {
 
 	private final static String FORMAT_PTN = "^[\\s]*([\\(（]{0,1}(%s)[\\)）]{0,1}){0,1}[\\s]*(([元0-9]{1,2})年){0,1}[\\s]*(([0-9]{1,2})月){0,1}[\\s]*(([0-9]{1,2})日){0,1}[\\s]*$";

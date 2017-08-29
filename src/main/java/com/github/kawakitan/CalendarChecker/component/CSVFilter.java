@@ -15,19 +15,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.kawakitan.CalendarChecker;
+package com.github.kawakitan.CalendarChecker.component;
 
-import com.github.kawakitan.CalendarChecker.frame.CalendarCheckerFrame;
+import java.io.File;
+
+import javax.swing.filechooser.FileFilter;
 
 /**
+ * CSVファイルフィルター
  * 
  * @author kawakitan
  */
-public class Application {
+public class CSVFilter extends FileFilter {
 
-	public static void main(String[] args) {
-		CalendarCheckerFrame frm = new CalendarCheckerFrame();
-		frm.setVisible(true);
+	@Override
+	public boolean accept(File f) {
+		if (f.isDirectory()) {
+			return true;
+		}
+
+		String ext = getExtension(f);
+		if (ext != null) {
+			if (ext.equals("csv")) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		return false;
 	}
 
+	@Override
+	public String getDescription() {
+		return "CSVファイル";
+	}
+
+	private String getExtension(final File file) {
+		String ext = null;
+		String filename = file.getName();
+		int index = filename.lastIndexOf('.');
+		if ((index > 0) && (index < filename.length() - 1)) {
+			ext = filename.substring(index + 1).toLowerCase();
+		}
+		return ext;
+	}
 }

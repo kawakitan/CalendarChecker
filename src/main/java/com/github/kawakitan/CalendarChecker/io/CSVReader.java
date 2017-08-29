@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.kawakitan.CalendarChecker;
+package com.github.kawakitan.CalendarChecker.io;
 
 import java.io.BufferedReader;
 import java.io.File;

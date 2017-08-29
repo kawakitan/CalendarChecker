@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.kawakitan.CalendarChecker;
+package com.github.kawakitan.CalendarChecker.frame;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -26,11 +27,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -41,68 +38,93 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
+import com.github.kawakitan.CalendarChecker.component.CSVFilter;
+import com.github.kawakitan.CalendarChecker.component.ExcelFilter;
+import com.github.kawakitan.CalendarChecker.component.NoWrapEditorKit;
 import com.github.kawakitan.CalendarChecker.entity.CheckCondition;
-import com.github.kawakitan.CalendarChecker.entity.Gengo;
+import com.github.kawakitan.CalendarChecker.utils.Utility;
 
-public class CalendarCheckerFrame extends JFrame {
+/**
+ * 
+ * @author kawakitan
+ */
+public abstract class AbstractCalendarCheckerFrame extends JFrame {
 
 	/** serialVersionUID */
-	private static final long serialVersionUID = 181840455171874578L;
+	private static final long serialVersionUID = -6558941935447875690L;
 
-	private final JLabel lblWareki;
-	private final JLabel lblSeireki;
-	private final JLabel lblInput;
-	private final JLabel lblOutput;
-	private final JLabel lblGengo;
-	private final JTextField txtWareki;
-	private final JTextField txtSeireki;
-	private final JTextField txtGengo;
-	private final JTextField txtInput;
-	private final JTextField txtOutput;
-	private final JComboBox<String> cmbInput;
-	private final JComboBox<String> cmbOutput;
-	private final JComboBox<String> cmbGengo;
-	private final JButton btnInput;
-	private final JButton btnOutput;
-	private final JButton btnGengo;
+	protected final JLabel lblWareki;
+	protected final JLabel lblSeireki;
+	protected final JLabel lblInput;
+	protected final JLabel lblOutput;
+	protected final JLabel lblGengo;
+	protected final JTextField txtWareki;
+	protected final JTextField txtSeireki;
+	protected final JTextField txtGengo;
+	protected final JTextField txtInput;
+	protected final JTextField txtOutput;
+	protected final JComboBox<String> cmbInput;
+	protected final JComboBox<String> cmbOutput;
+	protected final JComboBox<String> cmbGengo;
+	protected final JButton btnInput;
+	protected final JButton btnOutput;
+	protected final JButton btnGengo;
 
 	/** メッセージラベル */
-	private final JLabel lblMessage;
-	/** メッセージ詳細テキスト */
-	private final JTextPane txtMessageDetail;
+	protected final JLabel lblMessage;
+	/** レポート */
+	protected final JTextPane txtReport;
+	/** コンソール */
+	protected final JTextPane txtConsole;
 	/** スクロール */
-	private final JScrollPane pnlScroll;
+	protected final JScrollPane scrlReport;
+	protected final JScrollPane scrlConsole;
 	/** プログレスバー */
-	private final JProgressBar barProgress;
+	protected final JProgressBar barProgress;
 	/** OKボタン */
-	private final JButton btnOk;
+	protected final JButton btnOk;
 	/** キャンセルボタン */
-	private final JButton btnCancel;
+	protected final JButton btnCancel;
 
 	private Thread thread;
 
 	private boolean cancelFlag;
 
-	public CalendarCheckerFrame() {
-		setTitle("和西暦チェッカー ver.1.0.0");
+	private final MutableAttributeSet attrFail;
+	private final MutableAttributeSet attrWarn;
+
+	public AbstractCalendarCheckerFrame() {
+		setTitle("和西暦チェッカー ver.1.2.0");
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setLayout(null);
+
+		attrFail = new SimpleAttributeSet();
+		StyleConstants.setForeground(attrFail, Color.RED);
+		attrWarn = new SimpleAttributeSet();
+		StyleConstants.setForeground(attrWarn, Color.ORANGE);
 
 		lblWareki = new JLabel("和暦カラム名：");
 		lblSeireki = new JLabel("西暦カラム名：");
 		lblInput = new JLabel("入力ファイル：");
 		lblOutput = new JLabel("出力ファイル：");
 		lblGengo = new JLabel("元号ファイル：");
+
 		txtWareki = new JTextField("");
-		// txtWareki = new JTextField("和暦");
 		txtSeireki = new JTextField("");
-		// txtSeireki = new JTextField("西暦");
 		txtInput = new JTextField("");
-		// txtInput = new JTextField("sample.csv");
 		txtOutput = new JTextField("");
-		// txtOutput = new JTextField("sample.out.csv");
 		txtGengo = new JTextField("gengo.csv");
+
 		cmbInput = new JComboBox<String>(new String[] { "Windows-31J", "UTF-8" });
 		cmbOutput = new JComboBox<String>(new String[] { "Windows-31J", "UTF-8" });
 		cmbGengo = new JComboBox<String>(new String[] { "Windows-31J", "UTF-8" });
@@ -111,11 +133,19 @@ public class CalendarCheckerFrame extends JFrame {
 		btnGengo = new JButton("選択");
 
 		lblMessage = new JLabel();
-		txtMessageDetail = new JTextPane();
-		txtMessageDetail.setEditable(false);
-		final Font font = new Font(Font.MONOSPACED, txtMessageDetail.getFont().getStyle(), txtMessageDetail.getFont().getSize());
-		txtMessageDetail.setFont(font);
-		pnlScroll = new JScrollPane(txtMessageDetail);
+
+		txtReport = new JTextPane();
+		txtReport.setEditable(false);
+		final Font font = new Font(Font.MONOSPACED, txtReport.getFont().getStyle(), txtReport.getFont().getSize());
+		txtReport.setFont(font);
+
+		txtConsole = new JTextPane();
+		txtConsole.setEditable(false);
+		txtConsole.setFont(font);
+		txtConsole.setEditorKit(new NoWrapEditorKit());
+
+		scrlReport = new JScrollPane(txtReport);
+		scrlConsole = new JScrollPane(txtConsole);
 		barProgress = new JProgressBar();
 
 		btnOk = new JButton("OK");
@@ -138,10 +168,24 @@ public class CalendarCheckerFrame extends JFrame {
 		add(btnOutput);
 		add(btnGengo);
 		add(lblMessage);
-		add(pnlScroll);
+		add(scrlReport);
+		add(scrlConsole);
 		add(barProgress);
 		add(btnOk);
 		add(btnCancel);
+
+		((AbstractDocument) txtConsole.getDocument()).setDocumentFilter(new DocumentFilter() {
+			private static final int MAX_LINES = 100;
+
+			@Override
+			public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+				fb.insertString(offset, string, attr);
+				Element root = fb.getDocument().getDefaultRootElement();
+				if (root.getElementCount() > MAX_LINES) {
+					fb.remove(0, root.getElement(0).getEndOffset());
+				}
+			}
+		});
 
 		addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent e) {
@@ -192,7 +236,7 @@ public class CalendarCheckerFrame extends JFrame {
 		setEnableControl(true);
 
 		setLocation(60, 60);
-		setSize(800, 400);
+		setSize(900, 600);
 	}
 
 	private void selectInputFile() {
@@ -201,13 +245,24 @@ public class CalendarCheckerFrame extends JFrame {
 		int selected = filechooser.showOpenDialog(this);
 		if (selected == JFileChooser.APPROVE_OPTION) {
 			File file = filechooser.getSelectedFile();
-			txtInput.setText(file.getAbsolutePath());
+
+			String srcPath = file.getAbsolutePath();
+			txtInput.setText(srcPath);
+
+			int index = srcPath.lastIndexOf(".");
+
+			if (-1 != index) {
+				// String destPath = srcPath.substring(0, index) + ".out" + srcPath.substring(index);
+				String destPath = srcPath.substring(0, index) + ".out.xlsx";
+				txtOutput.setText(destPath);
+			}
 		}
 	}
 
 	private void selectOutputFile() {
 		final JFileChooser filechooser = new JFileChooser();
 		filechooser.addChoosableFileFilter(new CSVFilter());
+		filechooser.addChoosableFileFilter(new ExcelFilter());
 		int selected = filechooser.showSaveDialog(this);
 		if (selected == JFileChooser.APPROVE_OPTION) {
 			File file = filechooser.getSelectedFile();
@@ -296,6 +351,33 @@ public class CalendarCheckerFrame extends JFrame {
 		thread.start();
 	}
 
+	protected final void debug(final String message) {
+		log(message, null);
+	}
+
+	protected final void warn(final String message) {
+		log(message, attrWarn);
+	}
+
+	protected final void fail(final String message) {
+		log(message, attrFail);
+	}
+
+	private void log(final String message, final AttributeSet attr) {
+		final Document doc = txtConsole.getDocument();
+		final int length = doc.getLength();
+		try {
+			doc.insertString(length, message + "\n", attr);
+			txtConsole.setCaretPosition(doc.getLength());
+		} catch (BadLocationException ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	protected final boolean isCancel() {
+		return cancelFlag;
+	}
+
 	private void cancel() {
 		btnCancel.setEnabled(false);
 		cancelFlag = true;
@@ -307,129 +389,11 @@ public class CalendarCheckerFrame extends JFrame {
 		}
 	}
 
-	private Map<String, Gengo> getGengo(final File file, final Charset charset) {
-		final Map<String, Gengo> gengos = new HashMap<String, Gengo>();
-
-		CSVReader reader = null;
-		try {
-			reader = new CSVReader(file, charset);
-
-			List<String> data = reader.readCSVLine();
-			while (null != (data = reader.readCSVLine())) {
-				if (3 != data.size()) {
-					continue;
-				}
-
-				final String name = data.get(0);
-				final Integer startYear = Utility.toInteger(data.get(1));
-				final Integer endYear = Utility.toInteger(data.get(2));
-
-				final Gengo gengo = new Gengo(name, startYear, endYear);
-
-				gengos.put(gengo.getName(), gengo);
-			}
-
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			Utility.release(reader);
-		}
-
-		return gengos;
-	}
-
 	private void execute(final CheckCondition condition) {
-		CSVReader reader = null;
-		CSVWriter writer = null;
-
-		try {
-			lblMessage.setText(String.format("処理を開始します。"));
-			long tmStart = System.nanoTime();
-
-			final Map<String, Gengo> gengos = getGengo(condition.getGengoFile(), condition.getGengoCharset());
-
-			final CalendarConvertor convertor = new CalendarConvertor(gengos);
-
-			reader = new CSVReader(condition.getSrcFile(), condition.getSrcCharset());
-			writer = new CSVWriter(condition.getDestFile(), condition.getDestCharset());
-
-			List<String> data = reader.readCSVLine();
-
-			int warekiColumnNum = -1;
-			int seirekiColumnNum = -1;
-			for (int i = 0; i < data.size(); i++) {
-				if (condition.getWarekiColumnName().equals(data.get(i))) {
-					warekiColumnNum = i;
-				} else if (condition.getSeirekiColumnName().equals(data.get(i))) {
-					seirekiColumnNum = i;
-				}
-			}
-
-			data.add("可否");
-			data.add("想定");
-			writer.writeCSVLine(data);
-
-			int cntTotal = 0;
-			int cntMatch = 0;
-			int cntUnMatch = 0;
-			int cntUnknown = 0;
-
-			while (null != (data = reader.readCSVLine())) {
-				if (cancelFlag) {
-					break;
-				}
-
-				String s1 = data.get(warekiColumnNum);
-				String s2 = data.get(seirekiColumnNum);
-
-				String s3 = convertor.convert(s1);
-
-				cntTotal++;
-				if (null == s3) {
-					cntUnknown++;
-					data.add("？");
-				} else if (s2.equals(s3)) {
-					cntMatch++;
-					data.add("○");
-				} else {
-					cntUnMatch++;
-					data.add("×");
-				}
-
-				if (null != s3) {
-					data.add(s3);
-				} else {
-					data.add("未知のフォーマット");
-				}
-
-				writer.writeCSVLine(data);
-
-				if (0 == cntTotal % 100) {
-					long tmEnd = System.nanoTime();
-					double tmInterval = (double) (tmEnd - tmStart) / (double) (1000000000f);
-
-					lblMessage.setText(String.format("%d 件処理しました。[%.2f sec]", cntTotal, tmInterval));
-					txtMessageDetail.setText(String.format("一致件数　 : %7d 件\n不一致件数 : %7d 件\n不明件数　 : %7d 件", cntMatch, cntUnMatch, cntUnknown));
-				}
-			}
-
-			if (cancelFlag) {
-				lblMessage.setText("処理がキャンセルされました。");
-			} else {
-				long tmEnd = System.nanoTime();
-				double tmInterval = (double) (tmEnd - tmStart) / (double) (1000000000f);
-
-				lblMessage.setText(String.format("%d 件処理しました。[%.2f sec]", cntTotal, tmInterval));
-				txtMessageDetail.setText(String.format("一致件数　 : %7d 件\n不一致件数 : %7d 件\n不明件数　 : %7d 件", cntMatch, cntUnMatch, cntUnknown));
-			}
-
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			Utility.release(writer);
-			Utility.release(reader);
-		}
+		doExecute(condition);
 	}
+
+	protected abstract void doExecute(final CheckCondition condition);
 
 	private void doOpened() {
 
@@ -497,6 +461,7 @@ public class CalendarCheckerFrame extends JFrame {
 
 		y += heightComponent + space;
 
-		pnlScroll.setBounds(x, y, width - (margin * 2), height - (y + margin));
+		scrlReport.setBounds(x, y, 200, height - (y + margin));
+		scrlConsole.setBounds(x + 200 + space, y, width - (200 + space + margin * 2), height - (y + margin));
 	}
 }

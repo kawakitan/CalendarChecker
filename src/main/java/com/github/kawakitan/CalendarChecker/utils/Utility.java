@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.kawakitan.CalendarChecker;
+package com.github.kawakitan.CalendarChecker.utils;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
+
+import org.azkfw.io.csv.CSVReader;
 
 /**
  * ユーティリティクラス
@@ -28,19 +29,7 @@ import java.io.Writer;
  */
 public class Utility {
 
-	public static Integer toInteger(final String string) {
-		Integer integer = null;
-		if (null != string && 0 < string.trim().length()) {
-			try {
-				integer = Integer.parseInt(string);
-			} catch (NumberFormatException ex) {
-				ex.printStackTrace();
-			}
-		}
-		return integer;
-	}
-
-	public static void release(final Reader reader) {
+	public static void release(final CSVReader reader) {
 		if (null != reader) {
 			try {
 				reader.close();

@@ -15,49 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.kawakitan.CalendarChecker;
+package com.github.kawakitan.CalendarChecker.report;
 
 import java.io.File;
-
-import javax.swing.filechooser.FileFilter;
+import java.io.IOException;
+import java.nio.charset.Charset;
 
 /**
- * CSVフィルター
  * 
  * @author kawakitan
  */
-public class CSVFilter extends FileFilter {
+public class ReportFactory {
 
-	@Override
-	public boolean accept(File f) {
-		if (f.isDirectory()) {
-			return true;
-		}
-
-		String ext = getExtension(f);
-		if (ext != null) {
-			if (ext.equals("csv")) {
-				return true;
-			} else {
-				return false;
+	public static Report generate(final File file, final Charset charset) {
+		Report report = null;
+		try {
+			final String name = file.getAbsolutePath().toUpperCase();
+			if (name.endsWith(".CSV")) {
+				report = new CSVReport(file, charset);
+			} else if (name.endsWith(".XLS")) {
+				report = new ExcelReport(file);
+			} else if (name.endsWith(".XLSX")) {
+				report = new ExcelReport(file);
 			}
+		} catch (IOException ex) {
+			ex.printStackTrace();
 		}
-
-		return false;
-	}
-
-	@Override
-	public String getDescription() {
-		return "CSVファイル";
-	}
-
-	private String getExtension(final File file) {
-		String ext = null;
-		String filename = file.getName();
-		int index = filename.lastIndexOf('.');
-		if ((index > 0) && (index < filename.length() - 1)) {
-			ext = filename.substring(index + 1).toLowerCase();
-		}
-		return ext;
+		return report;
 	}
 }
