@@ -45,6 +45,7 @@ public class ExcelReport implements Report {
 	private final CellStyle styleHeader1;
 	private final CellStyle styleHeader2;
 	private final CellStyle styleRecordMatch;
+	private final CellStyle styleRecordMatchq;
 	private final CellStyle styleRecordUnmatch;
 	private final CellStyle styleRecordUnknown;
 
@@ -65,19 +66,22 @@ public class ExcelReport implements Report {
 			styleHeader1 = workbook.createCellStyle();
 			styleHeader2 = workbook.createCellStyle();
 			styleRecordMatch = workbook.createCellStyle();
+			styleRecordMatchq = workbook.createCellStyle();
 			styleRecordUnmatch = workbook.createCellStyle();
 			styleRecordUnknown = workbook.createCellStyle();
 
-			// styleHeader1.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			styleHeader1.setFillPattern(CellStyle.SOLID_FOREGROUND);
 			styleHeader1.setFillForegroundColor(IndexedColors.LIGHT_ORANGE.getIndex());
-			// styleHeader2.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			styleHeader2.setFillPattern(CellStyle.SOLID_FOREGROUND);
 			styleHeader2.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
 
-			// styleRecordMatch.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			styleRecordMatch.setFillPattern(CellStyle.SOLID_FOREGROUND);
 			styleRecordMatch.setFillForegroundColor(IndexedColors.WHITE.getIndex());
-			// styleRecordUnmatch.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			styleRecordMatchq.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			styleRecordMatchq.setFillForegroundColor(IndexedColors.BLUE.getIndex());
+			styleRecordUnmatch.setFillPattern(CellStyle.SOLID_FOREGROUND);
 			styleRecordUnmatch.setFillForegroundColor(IndexedColors.RED.getIndex());
-			// styleRecordUnknown.setFillPattern(CellStyle.SOLID_FOREGROUND);
+			styleRecordUnknown.setFillPattern(CellStyle.SOLID_FOREGROUND);
 			styleRecordUnknown.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
 
 			workbook.getFontAt((short) 0).setFontName("ＭＳ Ｐゴシック");
@@ -90,6 +94,7 @@ public class ExcelReport implements Report {
 			styleHeader1 = null;
 			styleHeader2 = null;
 			styleRecordMatch = null;
+			styleRecordMatchq = null;
 			styleRecordUnmatch = null;
 			styleRecordUnknown = null;
 
@@ -118,6 +123,8 @@ public class ExcelReport implements Report {
 		CellStyle style = null;
 		if ("○".equals(result)) {
 			style = styleRecordMatch;
+		} else if ("△".equals(result)) {
+			style = styleRecordMatchq;
 		} else if ("×".equals(result)) {
 			style = styleRecordUnmatch;
 		} else {

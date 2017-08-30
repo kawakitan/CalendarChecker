@@ -62,7 +62,8 @@ public class CalendarCheckerFrame extends AbstractCalendarCheckerFrame {
 
 		int cntTotal = 0;
 		int cntMatch = 0;
-		int cntUnMatch = 0;
+		int cntMatchq = 0;
+		int cntUnmatch = 0;
 		int cntUnknown = 0;
 		int cntSkip = 0;
 
@@ -72,7 +73,8 @@ public class CalendarCheckerFrame extends AbstractCalendarCheckerFrame {
 		Report report = null;
 		try {
 			lblMessage.setText(String.format("処理を開始します。"));
-			txtReport.setText(String.format("一致件数　　 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntUnMatch, cntUnknown, cntSkip));
+			txtReport.setText(String.format("一致件数　　 : %7d 件\n一致かも件数 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntMatchq, cntUnmatch,
+					cntUnknown, cntSkip));
 
 			do {
 				final Map<String, Gengo> gengos = getGengo(condition.getGengoFile(), condition.getGengoCharset());
@@ -139,8 +141,14 @@ public class CalendarCheckerFrame extends AbstractCalendarCheckerFrame {
 						cntMatch++;
 						result = "○";
 					} else {
-						cntUnMatch++;
-						result = "×";
+						if (8 == strSeireki.length() && (strSeireki.endsWith("44") || strSeireki.endsWith("55"))
+								&& strSeireki.substring(0, 6).equals(strExpected.substring(0, 6))) {
+							cntMatchq++;
+							result = "△";
+						} else {
+							cntUnmatch++;
+							result = "×";
+						}
 					}
 
 					report.addDataRecord(data, result, (null != strExpected) ? strExpected : "未知のフォーマット");
@@ -149,8 +157,8 @@ public class CalendarCheckerFrame extends AbstractCalendarCheckerFrame {
 						final long tmEnd = System.nanoTime();
 						final double tmInterval = (double) (tmEnd - tmStart) / (double) (1000000000f);
 						lblMessage.setText(String.format("%d 件処理しました。[%.2f sec]", cntTotal, tmInterval));
-						txtReport.setText(String.format("一致件数　　 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntUnMatch, cntUnknown,
-								cntSkip));
+						txtReport.setText(String.format("一致件数　　 : %7d 件\n一致かも件数 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntMatchq,
+								cntUnmatch, cntUnknown, cntSkip));
 					}
 
 					row++;
@@ -160,12 +168,12 @@ public class CalendarCheckerFrame extends AbstractCalendarCheckerFrame {
 				final double tmInterval = (double) (tmEnd - tmStart) / (double) (1000000000f);
 				if (isCancel()) {
 					lblMessage.setText(String.format("処理がキャンセルされました。[%.2f sec]", tmInterval));
-					txtReport.setText(String
-							.format("一致件数　　 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntUnMatch, cntUnknown, cntSkip));
+					txtReport.setText(String.format("一致件数　　 : %7d 件\n一致かも件数 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntMatchq,
+							cntUnmatch, cntUnknown, cntSkip));
 				} else {
 					lblMessage.setText(String.format("%d 件処理しました。[%.2f sec]", cntTotal, tmInterval));
-					txtReport.setText(String
-							.format("一致件数　　 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntUnMatch, cntUnknown, cntSkip));
+					txtReport.setText(String.format("一致件数　　 : %7d 件\n一致かも件数 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntMatchq,
+							cntUnmatch, cntUnknown, cntSkip));
 				}
 
 			} while (false);
@@ -174,7 +182,8 @@ public class CalendarCheckerFrame extends AbstractCalendarCheckerFrame {
 			final long tmEnd = System.nanoTime();
 			final double tmInterval = (double) (tmEnd - tmStart) / (double) (1000000000f);
 			lblMessage.setText(String.format("処理中にエラーが発生しました。[%.2f sec]", tmInterval));
-			txtReport.setText(String.format("一致件数　　 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntUnMatch, cntUnknown, cntSkip));
+			txtReport.setText(String.format("一致件数　　 : %7d 件\n一致かも件数 : %7d 件\n不一致件数　 : %7d 件\n不明件数　　 : %7d 件\nスキップ件数 : %7d 件", cntMatch, cntMatchq, cntUnmatch,
+					cntUnknown, cntSkip));
 
 			final StringWriter sw = new StringWriter();
 			final PrintWriter pw = new PrintWriter(sw);

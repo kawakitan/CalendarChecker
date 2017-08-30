@@ -104,7 +104,7 @@ public abstract class AbstractCalendarCheckerFrame extends JFrame {
 	private final MutableAttributeSet attrWarn;
 
 	public AbstractCalendarCheckerFrame() {
-		setTitle("和西暦チェッカー ver.1.2.0");
+		setTitle("和西暦チェッカー ver.1.3.0");
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setLayout(null);
 
@@ -119,8 +119,8 @@ public abstract class AbstractCalendarCheckerFrame extends JFrame {
 		lblOutput = new JLabel("出力ファイル：");
 		lblGengo = new JLabel("元号ファイル：");
 
-		txtWareki = new JTextField("");
-		txtSeireki = new JTextField("");
+		txtWareki = new JTextField("成立年月日（和暦開始）");
+		txtSeireki = new JTextField("成立年月日（西暦開始）");
 		txtInput = new JTextField("");
 		txtOutput = new JTextField("");
 		txtGengo = new JTextField("gengo.csv");

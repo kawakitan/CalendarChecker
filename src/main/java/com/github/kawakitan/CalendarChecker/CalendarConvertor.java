@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.github.kawakitan.CalendarChecker.entity.Gengo;
+import com.github.kawakitan.CalendarChecker.utils.Utility;
 
 /**
  * 
@@ -49,7 +50,11 @@ public class CalendarConvertor {
 	}
 
 	public String convert(final String string) {
-		String buf = string.replaceAll("[閏甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]", "");
+		String buf = string;
+		buf = buf.replaceAll("[閏甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]", "");
+		buf = buf.replaceAll("[\\(\\)（）]", "");
+		buf = buf.replaceAll("ｶ", "");
+		buf = buf.replaceAll("以降", "");
 
 		String result = null;
 		final Matcher m = ptn.matcher(buf);
@@ -63,7 +68,11 @@ public class CalendarConvertor {
 				if (null == gengo) {
 					return null;
 				} else {
-					s.append(String.format("%04d", gengo.getStartYear() + nen - 1));
+					if (Utility.equalsAny(m.group(2), "近代", "近世")) {
+						s.append(String.format("%04d", gengo.getStartYear()));
+					} else {
+						s.append(String.format("%04d", gengo.getStartYear() + nen - 1));
+					}
 				}
 			} else if (null != m.group(1)) {
 				// 平成 / (平成)

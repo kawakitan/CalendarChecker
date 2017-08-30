@@ -29,6 +29,15 @@ import org.azkfw.io.csv.CSVReader;
  */
 public class Utility {
 
+	public static <T> boolean equalsAny(final T object, final T... objects) {
+		for (T obj : objects) {
+			if (object.equals(obj)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static void release(final CSVReader reader) {
 		if (null != reader) {
 			try {
